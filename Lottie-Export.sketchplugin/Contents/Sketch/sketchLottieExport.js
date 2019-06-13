@@ -223,7 +223,7 @@ function groupObjectFromLayerGroup(layerGroup) {
     var aX = layerGroup.frame().width() * 0.5
     var aY = layerGroup.frame().height() * 0.5
     var position = animatableObject([layerGroup.center().x, layerGroup.center().y, 0])
-    var origin =  animatableObject(aX, aY,0])
+    var origin =  animatableObject([aX, aY, 0])
     var rotation = animatableObject(-layerGroup.rotation())
     var scale = animatableObject([100,100,100])
     var opacity = animatableObject((style.contextSettings().opacity()* 100))
@@ -313,7 +313,7 @@ function groupObjectFromShapeGroup(shapeGroup) {
 
     // The Top Level transform node
     var position = animatableObject([shapeGroup.center().x, shapeGroup.center().y, 0])
-    var origin =  animatableObject(0, 0, 0])
+    var origin =  animatableObject([0, 0, 0])
     var rotation = animatableObject(-shapeGroup.rotation())
     var scale = animatableObject([100,100,100])
     var opacity = animatableObject((style.contextSettings().opacity()* 100))
@@ -388,7 +388,7 @@ function groupObjectFromShapeLayer(shapeGroup) {
 
     // The Top Level transform node
     var position = animatableObject([shapeGroup.center().x, shapeGroup.center().y, 0])
-    var origin =  animatableObject(0, 0, 0])
+    var origin =  animatableObject([0, 0, 0])
     var rotation = animatableObject(-shapeGroup.rotation())
     var scale = animatableObject([100,100,100])
     var opacity = animatableObject((style.contextSettings().opacity()* 100))
