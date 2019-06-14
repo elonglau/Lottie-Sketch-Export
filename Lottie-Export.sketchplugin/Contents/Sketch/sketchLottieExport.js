@@ -266,6 +266,8 @@ function groupObjectFromLayerGroup(layerGroup) {
 function groupObjectFromShapeGroup(shapeGroup) {
     // Converts a shape groupd into a lottie shape group. 
     // Contains shapes, fills and strokes for the layer, with a final transform node.
+    var width = shapeGroup.frame().width()
+    var height = shapeGroup.frame().height()
     var name = shapeGroup.name()
     var it = []
     // First add shape point data
@@ -291,7 +293,7 @@ function groupObjectFromShapeGroup(shapeGroup) {
     var fills = style.fills()
     fills.forEach(function(fill) {
         if (fill.isEnabled()) {
-            var fillObject = fillObjectFromFill(fill)
+            var fillObject = fillObjectFromFill(fill, width, height)
             it.push(fillObject)
         }
     })
@@ -515,16 +517,72 @@ function strokeObjectFromBorder(border, borderOptions) {
     }
 }
 
-function fillObjectFromFill(fill) {
-    // TODO Support Gradient fill type.
+function fillObjectFromFill(fill, width, height) {
     var opacity = animatableObject((fill.contextSettings().opacity()  * 100))
     var color = animatableObject([fill.color().red(), fill.color().green(), fill.color().blue(), fill.color().alpha()])
-    return {
-        ty: "fl",
-        nm: "Fill",
-        c: color,
-        o: opacity
+
+    var fillType = fill.fillType()
+    var gradient = fill.gradient()
+    var gradientType = gradient.gradientType()
+    
+    var gradientStops = gradient.stops()
+    var gradientStopsLength = gradientStops.length
+    var gradientStopsValue = []
+    for(var i = 0; i < gradientStopsLength; i++) {
+        gradientStopsValue.push(gradientStops[i].position())
+        gradientStopsValue.push(gradientStops[i].color().red())
+        gradientStopsValue.push(gradientStops[i].color().green())
+        gradientStopsValue.push(gradientStops[i].color().blue())
     }
+    gradientStopsValue = animatableObject(gradientStopsValue)
+
+    // from & to value must be converted to absolute value because of the lottie gradientUnits attribute is 'userSpaceOnUse'
+    var gradientLinearForm = animatableObject([gradient.from().x * width, gradient.from().y * height])
+    var gradientLinearTo = animatableObject([gradient.to().x * width, gradient.to().y * height])
+
+    if ( fillType === 1 ) { // 0 : Color | 1 : Gradient
+        if ( gradientType === 0 ) { // 0 : Linear | 1 : Radial
+            return {
+                ty: "gf",
+                nm: "gFill",
+                g: {
+                    p: gradientStopsLength,
+                    k: gradientStopsValue
+                },
+                o: opacity,
+                t: 1,
+                s: gradientLinearForm,
+                e: gradientLinearTo
+            }  
+        } else {
+            return {
+                ty: "gf",
+                nm: "gFill",
+                g: {
+                    p: gradientStopsLength,
+                    k: gradientStopsValue
+                },
+                o: opacity,
+                t: 2,
+                s: gradientLinearForm,
+                e: gradientLinearTo,
+                h: {
+                    k: 0
+                },
+                a: {
+                    k: 0
+                }
+            }
+        }
+    } else {
+        return {
+            ty: "fl",
+            nm: "Fill",
+            c: color,
+            o: opacity
+        }
+    }
+    
 }
 
 // Primitives
